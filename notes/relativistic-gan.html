@@ -36,7 +36,51 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
     <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
     <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"
-            onload="renderMathInElement(document.body, {delimiters: [{left: '$$', right: '$$', display: true}, {left: '$', right: '$', display: false}]});"></script>
+            onload="renderMathInElement(document.body, {delimiters: [{left: '$$', right: '$$', display: true}, {left: '$', right: '$', display: false}]}); tidyMath();"></script>
+    <script>
+      // Runs once, right after the formulas are rendered.
+      function tidyMath() {
+        keepPunctuationWithMath();
+        fitFormulas();
+        if (document.fonts && document.fonts.ready) document.fonts.ready.then(fitFormulas);   // the widths change when the math fonts arrive
+        let width = document.documentElement.clientWidth;
+        window.addEventListener('resize', () => {              // a phone also fires "resize" when its address bar hides; only the width matters
+          if (document.documentElement.clientWidth === width) return;
+          width = document.documentElement.clientWidth;
+          fitFormulas();
+        });
+      }
+
+      // On a phone a display formula can be wider than the text column. Such a formula is made smaller until it fits,
+      // but never smaller than 60% of its normal size; a formula that is still too wide scrolls sideways.
+      function fitFormulas() {
+        const all = Array.from(document.querySelectorAll('.note .katex-display'));
+        all.forEach(d => { d.style.fontSize = ''; });          // back to the size from the stylesheet
+        const sizes = all.map(d => [d.clientWidth / d.scrollWidth, parseFloat(getComputedStyle(d).fontSize)]);
+        all.forEach((d, i) => {
+          const [fit, px] = sizes[i];
+          if (fit < 1) d.style.fontSize = (px * Math.max(0.6, fit - 0.01)).toFixed(2) + 'px';
+        });
+      }
+
+      // A line must not break between a short inline formula and the punctuation right after it
+      // (otherwise a line can start with ". A plateau ..."). The formula and the punctuation are put in one unbreakable span.
+      // Formulas with several parts (a = b) are left alone, because they must stay breakable themselves.
+      function keepPunctuationWithMath() {
+        document.querySelectorAll('.note .katex').forEach(k => {
+          if (k.closest('.katex-display') || k.querySelectorAll('.katex-html > .base').length !== 1) return;
+          const outer = k.parentElement.childNodes.length === 1 ? k.parentElement : k;   // auto-render wraps every formula in its own span
+          const next = outer.nextSibling;
+          const m = next && next.nodeType === 3 && /^[.,;:!?)]+/.exec(next.nodeValue);
+          if (!m) return;
+          const glue = document.createElement('span');
+          glue.style.whiteSpace = 'nowrap';
+          outer.replaceWith(glue);
+          glue.append(outer, m[0]);
+          next.nodeValue = next.nodeValue.slice(m[0].length);
+        });
+      }
+    </script>
 
     <style>
       /* Same look as the homepage (Lato, white page, blue links), with larger text. */
@@ -61,10 +105,13 @@
       table.states td:first-child { text-align: left; white-space: nowrap; }
       table.states td.v { padding: 12px 16px; font-weight: 700; }
       .cbar { display: inline-block; width: 90px; height: 12px; background: linear-gradient(to right, #3b4cc0, #6282ea, #8db0fe, #b9d0f9, #dddddd, #f2cbb7, #f49a7b, #dc5d4a, #b40426); }
+      /* phones: the table takes the width of the text column, and its text and pictures get smaller with the screen, so all three columns fit */
       @media (max-width: 620px) {
-        table.states th, table.states td, table.states td.v { padding: 6px; font-size: 16px; }
+        table.states { width: 100%; max-width: 420px; table-layout: fixed; }
+        table.states th:first-child { width: 22%; }
+        table.states th, table.states td, table.states td.v { padding: 6px 2px; font-size: clamp(12px, 4.1vw, 16px); }
         table.states td:first-child { white-space: normal; }
-        table.states svg { width: 80px; height: auto; }
+        table.states svg { width: 100%; max-width: 80px; height: auto; }
       }
 
       .fig { margin: 28px 0 32px; }

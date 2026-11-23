@@ -140,3 +140,163 @@ span.highlight {
     display: inline-block;
     border-radius: 10px;
 }
+
+/* Layout of the homepage. On a wide screen every block is a table row with two cells side by side
+   (bio | photo, picture | text). On a phone the two cells are stacked: see the rules at the bottom. */
+.intro-text {
+  padding: 2.5%;
+  width: 63%;
+  vertical-align: middle;
+}
+
+.intro-photo {
+  padding: 2.5%;
+  width: 37%;
+  max-width: 37%;
+  text-align: center;
+}
+
+.photo {
+  width: 75%;
+  max-width: 75%;
+  aspect-ratio: 1 / 1;
+  object-fit: cover;
+  object-position: center 20%;
+  border-radius: 50%;
+}
+
+.section {
+  padding: 16px;
+  width: 100%;
+  vertical-align: middle;
+}
+
+.entry-media {
+  padding: 16px;
+  width: 25%;
+  vertical-align: middle;
+}
+
+.entry-text {
+  padding: 8px;
+  width: 75%;
+  vertical-align: middle;
+}
+
+/* Phones do not enlarge the text on their own (they do it for some tables and in landscape). */
+html {
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+
+/* Phones: one column. The photo goes above the bio, every picture goes above its text and takes the full width,
+   and the text is larger. */
+@media (max-width: 600px) {
+  body {
+    margin: 0;
+  }
+
+  body,
+  td,
+  th,
+  tr,
+  p,
+  a,
+  strong,
+  .papertitle {
+    font-size: 16px;
+    line-height: 1.45;
+  }
+
+  .papertitle {
+    font-size: 17px;
+  }
+
+  /* the tables, their rows and their cells become plain blocks, so the cells stack */
+  .intro,
+  .intro > tbody,
+  .intro tr,
+  .entries,
+  .entries > tbody,
+  .entry,
+  .intro-text,
+  .intro-photo,
+  .section,
+  .entry-media,
+  .entry-text,
+  .footer {
+    display: block;
+    box-sizing: border-box;
+    width: 100%;
+    max-width: none;
+  }
+
+  /* the photo cell comes second in the row; show it first */
+  .intro tr {
+    display: flex;
+    flex-direction: column-reverse;
+  }
+
+  .intro-photo {
+    padding: 32px 20px 0;
+  }
+
+  .photo {
+    width: 150px;
+    max-width: 150px;
+  }
+
+  .intro-text {
+    padding: 0 20px;
+  }
+
+  .name {
+    padding-top: 14px;
+    line-height: 1.2;
+  }
+
+  .section {
+    padding: 26px 20px 0;
+  }
+
+  /* a heading with no text under it (Other projects) keeps the same gap before the first entry */
+  .section h2:only-child {
+    margin-bottom: 16px;
+  }
+
+  .entries {
+    margin-top: 4px;
+  }
+
+  .entry {
+    margin-bottom: 34px;
+  }
+
+  .entry:last-child {
+    margin-bottom: 0;
+  }
+
+  .entry-media {
+    padding: 0 20px 12px;
+  }
+
+  /* full width on a phone; the limit only matters on screens between a phone and a tablet */
+  .entry-media img,
+  .entry-media video {
+    display: block;
+    max-width: 480px;
+  }
+
+  .entry-text {
+    padding: 0 20px;
+  }
+
+  .footer {
+    padding: 8px 20px 16px !important;
+  }
+
+  /* the link in the small footer line stays as small as the line */
+  .footer a {
+    font-size: inherit;
+  }
+}
